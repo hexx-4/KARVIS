@@ -13,6 +13,7 @@ public class TTS : MonoBehaviour
 
     //구글 TTS를 이용할 오리지널 앞 주소
     private string mPrefixURL;
+    public bool isResponding = false;
 
 
     void Awake()
@@ -82,6 +83,7 @@ public class TTS : MonoBehaviour
             {
                 mAudio.clip = DownloadHandlerAudioClip.GetContent(www);
                 mAudio.Play();
+                isResponding = false;
             }
         }
     }

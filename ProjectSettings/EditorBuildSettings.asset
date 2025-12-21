@@ -8,9 +8,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/PassthroughCameraApiSamples/StartScene/StartScene.unity
     guid: 69e1b31c45bac42f88f75017ee404de1
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Main.unity
     guid: ad5bb12b10679b840999aa322aa7a491
+  - enabled: 1
+    path: Assets/Scenes/New.unity
+    guid: 28e41ad871c839840b80b3e6481218db
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfb031d1ed5915a48a84cc9dc82cb271, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}

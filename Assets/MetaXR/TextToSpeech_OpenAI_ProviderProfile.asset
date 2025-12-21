@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TextToSpeech_OpenAI_ProviderProfile
   m_EditorClassIdentifier: 
   supportedInferenceTypes: 1
-  apiKey: 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
+  apiKey: 
   apiRoot: https://api.openai.com/v1/responses
   model: tts-1
   supportsVision: 1

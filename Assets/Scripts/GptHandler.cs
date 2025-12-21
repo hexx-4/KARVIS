@@ -18,8 +18,7 @@ public sealed class GptHandler : MonoBehaviour
 
     [Header("Image Source")]
     [Tooltip("Enable or disable sending an image along with the text prompt.")]
-    [SerializeField]
-    private bool includeImage = true;
+    public bool includeImage = true;
 
     [Tooltip("Select which image source to use when Include Image is enabled: Camera (fake image when in editor), Inspector Texture, or Image URL.")]
     [SerializeField]

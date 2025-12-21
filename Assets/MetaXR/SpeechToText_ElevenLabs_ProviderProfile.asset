@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SpeechToText_ElevenLabs_ProviderProfile
   m_EditorClassIdentifier: 
   supportedInferenceTypes: 1
-  apiKey: sk_67ca81c2cc8ae0815ba7127248d778359faad5075db558e5
+  apiKey: 2dc8f2b0723b7a6d0b90b263825a6da8cfdb1b8e1b450a9abff3a90859e9fd85
   endpoint: https://api.elevenlabs.io
   model: scribe_v1
   voiceId: TX3LPaxmHKxFdv7VOQHJ
