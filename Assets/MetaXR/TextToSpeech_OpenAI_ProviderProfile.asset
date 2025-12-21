@@ -21,7 +21,7 @@ MonoBehaviour:
   resolveRemoteRedirects: 1
   maxInlineBytes: 0
   sttResponseFormat: text
-  sttLanguage: 
+  sttLanguage: ko
   sttTemperature: 0
   ttsVoice: alloy
   ttsOutputFormat: mp3

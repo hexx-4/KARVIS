@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/PassthroughCameraApiSamples/StartScene/StartScene.unity
     guid: 69e1b31c45bac42f88f75017ee404de1
   - enabled: 1
-    path: Assets/PassthroughCameraApiSamples/CameraViewer/CameraViewer.unity
+    path: Assets/Scenes/Main.unity
     guid: ad5bb12b10679b840999aa322aa7a491
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfb031d1ed5915a48a84cc9dc82cb271, type: 2}

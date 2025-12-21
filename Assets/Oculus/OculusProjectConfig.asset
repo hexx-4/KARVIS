@@ -16,14 +16,14 @@ MonoBehaviour:
   allowOptional3DofHeadTracking: 0
   handTrackingSupport: 1
   handTrackingFrequency: 0
-  handTrackingVersion: 0
+  handTrackingVersion: 2
   anchorSupport: 1
   sharedAnchorSupport: 0
   renderModelSupport: 0
   trackedKeyboardSupport: 0
   bodyTrackingSupport: 0
   faceTrackingSupport: 0
-  eyeTrackingSupport: 0
+  eyeTrackingSupport: 1
   virtualKeyboardSupport: 0
   colocationSessionSupport: 0
   sceneSupport: 2
@@ -44,6 +44,6 @@ MonoBehaviour:
   _insightPassthroughSupport: 1
   isPassthroughCameraAccessEnabled: 1
   _processorFavor: 0
-  systemSplashScreen: {fileID: 0}
+  systemSplashScreen: {fileID: 2800000, guid: b33ce1e5c93f0c6478b76f4a91b3e9a9, type: 3}
   systemSplashScreenType: 1
   _systemLoadingScreenBackground: 1
