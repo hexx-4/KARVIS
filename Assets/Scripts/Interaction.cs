@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Text;
 
 /// <summary>
 /// Bridges Gpt tool-calls to predefined scene blocks.
@@ -338,30 +338,70 @@ public class Interaction : MonoBehaviour
 
     private static bool IsGrabbed(GameObject go)
     {
-        // Heuristic: check common grab components via reflection to avoid hard SDK dependency.
-        var components = go.GetComponents<Component>();
-        foreach (var c in components)
+        // Prefer MetaXR Building Blocks style hand grab interactable (if present).
+        var metaHandGrab = GetComponentByName(go, "Meta.XR.Interaction.HandGrab.HandGrabInteractable");
+        if (metaHandGrab != null && HasSelectingPoints(metaHandGrab))
         {
-            if (c == null) continue;
+            return true;
+        }
 
-            var type = c.GetType();
+        // Oculus Interaction hand grab (common in MetaXR packages).
+        var oculusHandGrab = GetComponentByName(go, "Oculus.Interaction.HandGrab.HandGrabInteractable");
+        if (oculusHandGrab != null && HasSelectingPoints(oculusHandGrab))
+        {
+            return true;
+        }
 
-            // Common property names
-            var prop = type.GetProperty("isGrabbed") ?? type.GetProperty("IsGrabbed") ?? type.GetProperty("Selected") ?? type.GetProperty("SelectingInteractors");
-            if (prop != null)
+        // OVRGrabbable fallback.
+        var ovr = GetComponentByName(go, "OVRGrabbable");
+        if (ovr != null && HasBoolProperty(ovr, "isGrabbed"))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static Component GetComponentByName(GameObject go, string typeName)
+    {
+        var type = Type.GetType(typeName);
+        return type == null ? null : go.GetComponent(type);
+    }
+
+    private static bool HasSelectingPoints(Component comp)
+    {
+        var type = comp.GetType();
+        var prop = type.GetProperty("SelectingPointsCount");
+        if (prop != null)
+        {
+            try
             {
-                try
-                {
-                    var value = prop.GetValue(c, null);
-                    if (value is bool b && b) return true;
+                var value = prop.GetValue(comp, null);
+                if (value is int i && i > 0) return true;
+            }
+            catch (Exception)
+            {
+                // ignore
+            }
+        }
 
-                    // Many interaction SDKs expose a collection of selecting interactors.
-                    if (value is System.Collections.ICollection coll && coll.Count > 0) return true;
-                }
-                catch (Exception)
-                {
-                    // ignore reflection errors
-                }
+        return HasBoolProperty(comp, "isGrabbed");
+    }
+
+    private static bool HasBoolProperty(Component comp, string propertyName)
+    {
+        var type = comp.GetType();
+        var prop = type.GetProperty(propertyName);
+        if (prop != null)
+        {
+            try
+            {
+                var value = prop.GetValue(comp, null);
+                if (value is bool b && b) return true;
+            }
+            catch (Exception)
+            {
+                // ignore
             }
         }
 
