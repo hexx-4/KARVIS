@@ -39,6 +39,20 @@ public class Interaction : MonoBehaviour
     }
 
     [Serializable]
+    private class PositionArgs
+    {
+        public string name;
+        public Vector3 position;
+    }
+
+    [Serializable]
+    private class VelocityArgs
+    {
+        public string name;
+        public Vector3 velocity;
+    }
+
+    [Serializable]
     private class StateArgs
     {
         public string name;
@@ -83,6 +97,14 @@ public class Interaction : MonoBehaviour
 
             case "recolor_object":
                 HandleRecolor(call.function.arguments);
+                break;
+
+            case "set_position":
+                HandleSetPosition(call.function.arguments);
+                break;
+
+            case "set_velocity":
+                HandleSetVelocity(call.function.arguments);
                 break;
 
             default:
@@ -149,6 +171,53 @@ public class Interaction : MonoBehaviour
         }
 
         SendFeedback($"recolor_object: '{args.name}' set to {ColorUtility.ToHtmlStringRGB(parsed)}.");
+    }
+
+    private void HandleSetPosition(string argsJson)
+    {
+        var args = JsonUtility.FromJson<PositionArgs>(argsJson);
+        if (args == null || string.IsNullOrWhiteSpace(args.name))
+        {
+            SendFeedback("set_position failed: missing name or position.");
+            return;
+        }
+
+        var interactable = FindInteractable(args.name);
+        if (interactable == null)
+        {
+            SendFeedback($"set_position: '{args.name}' not found or not whitelisted.");
+            return;
+        }
+
+        interactable.target.transform.position = args.position;
+        SendFeedback($"set_position: '{args.name}' moved to ({args.position.x:F2},{args.position.y:F2},{args.position.z:F2}).");
+    }
+
+    private void HandleSetVelocity(string argsJson)
+    {
+        var args = JsonUtility.FromJson<VelocityArgs>(argsJson);
+        if (args == null || string.IsNullOrWhiteSpace(args.name))
+        {
+            SendFeedback("set_velocity failed: missing name or velocity.");
+            return;
+        }
+
+        var interactable = FindInteractable(args.name);
+        if (interactable == null)
+        {
+            SendFeedback($"set_velocity: '{args.name}' not found or not whitelisted.");
+            return;
+        }
+
+        var rb = interactable.target.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            SendFeedback($"set_velocity: '{args.name}' has no Rigidbody.");
+            return;
+        }
+
+        rb.velocity = args.velocity;
+        SendFeedback($"set_velocity: '{args.name}' velocity set to ({args.velocity.x:F2},{args.velocity.y:F2},{args.velocity.z:F2}).");
     }
 
     private Interactable FindInteractable(string name)
