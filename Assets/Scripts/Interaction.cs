@@ -58,6 +58,12 @@ public class Interaction : MonoBehaviour
         public string name;
     }
 
+    [Serializable]
+    private class GrabbedArgs
+    {
+        public bool onlyGrabbed = true;
+    }
+
     private void Awake()
     {
         if (gpt != null)
@@ -105,6 +111,10 @@ public class Interaction : MonoBehaviour
 
             case "set_velocity":
                 HandleSetVelocity(call.function.arguments);
+                break;
+
+            case "get_grabbed_interactables":
+                HandleGetGrabbed(call.function.arguments);
                 break;
 
             default:
@@ -220,6 +230,40 @@ public class Interaction : MonoBehaviour
         SendFeedback($"set_velocity: '{args.name}' velocity set to ({args.velocity.x:F2},{args.velocity.y:F2},{args.velocity.z:F2}).");
     }
 
+    private void HandleGetGrabbed(string argsJson)
+    {
+        // If args parsing fails, default to only returning grabbed ones.
+        var args = JsonUtility.FromJson<GrabbedArgs>(string.IsNullOrEmpty(argsJson) ? "{}" : argsJson);
+        bool filterGrabbed = args == null || args.onlyGrabbed;
+
+        var sb = new StringBuilder();
+        sb.Append("{\"interactables\":[");
+
+        bool first = true;
+        foreach (var interactable in interactables)
+        {
+            if (interactable == null || interactable.target == null)
+            {
+                continue;
+            }
+
+            if (filterGrabbed && !IsGrabbed(interactable.target))
+            {
+                continue;
+            }
+
+            if (!first)
+            {
+                sb.Append(",");
+            }
+            sb.Append(BuildSingleSummary(interactable));
+            first = false;
+        }
+
+        sb.Append("]}");
+        SendFeedback(sb.ToString());
+    }
+
     private Interactable FindInteractable(string name)
     {
         return interactables.Find(i => i != null && i.target != null && string.Equals(i.name, name, StringComparison.OrdinalIgnoreCase));
@@ -255,11 +299,17 @@ public class Interaction : MonoBehaviour
     {
         var t = interactable.target.transform;
         var renderer = interactable.target.GetComponentInChildren<Renderer>();
-        var colorHex = renderer != null ? ColorUtility.ToHtmlStringRGB(renderer.sharedMaterial.color) : "unknown";
+        string colorHex = "unknown";
+        if (renderer != null && renderer.sharedMaterial != null)
+        {
+            colorHex = ColorUtility.ToHtmlStringRGB(renderer.sharedMaterial.color);
+        }
         var rb = interactable.target.GetComponent<Rigidbody>();
         var velocity = rb != null ? rb.velocity : Vector3.zero;
 
-        return $"{{\"name\":\"{interactable.name}\",\"position\":{{\"x\":{t.position.x:F2},\"y\":{t.position.y:F2},\"z\":{t.position.z:F2}}},\"velocity\":{{\"x\":{velocity.x:F2},\"y\":{velocity.y:F2},\"z\":{velocity.z:F2}}},\"color\":\"#{colorHex}\"}}";
+        bool grabbed = IsGrabbed(interactable.target);
+
+        return $"{{\"name\":\"{interactable.name}\",\"position\":{{\"x\":{t.position.x:F2},\"y\":{t.position.y:F2},\"z\":{t.position.z:F2}}},\"velocity\":{{\"x\":{velocity.x:F2},\"y\":{velocity.y:F2},\"z\":{velocity.z:F2}}},\"color\":\"#{colorHex}\",\"grabbed\":{grabbed.ToString().ToLowerInvariant()}}}";
     }
 
     private static bool TryParseColor(string input, out Color color)
@@ -284,6 +334,38 @@ public class Interaction : MonoBehaviour
             case "cyan": color = Color.cyan; return true;
             default: return false;
         }
+    }
+
+    private static bool IsGrabbed(GameObject go)
+    {
+        // Heuristic: check common grab components via reflection to avoid hard SDK dependency.
+        var components = go.GetComponents<Component>();
+        foreach (var c in components)
+        {
+            if (c == null) continue;
+
+            var type = c.GetType();
+
+            // Common property names
+            var prop = type.GetProperty("isGrabbed") ?? type.GetProperty("IsGrabbed") ?? type.GetProperty("Selected") ?? type.GetProperty("SelectingInteractors");
+            if (prop != null)
+            {
+                try
+                {
+                    var value = prop.GetValue(c, null);
+                    if (value is bool b && b) return true;
+
+                    // Many interaction SDKs expose a collection of selecting interactors.
+                    if (value is System.Collections.ICollection coll && coll.Count > 0) return true;
+                }
+                catch (Exception)
+                {
+                    // ignore reflection errors
+                }
+            }
+        }
+
+        return false;
     }
 
     private void SendFeedback(string text)
