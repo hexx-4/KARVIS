@@ -70,17 +70,10 @@ public class Gpt : MonoBehaviour
     }
 
     [System.Serializable]
-    public class ChatMessage
-    {
-        public string role;
-        public string content;
-        public ToolCall[] tool_calls;
-    }
-
-    [System.Serializable]
     public class Choice
     {
-        public ChatMessage message;
+        public Message message;
+        public ToolCall[] tool_calls;
     }
 
     [System.Serializable]
@@ -92,11 +85,6 @@ public class Gpt : MonoBehaviour
     [Header("Events")]
     public UnityEvent<string> OnAssistantMessage;
     public UnityEvent<ToolCall[]> OnToolCalls;
-    public UnityEvent<ToolCall> OnBlockToolCall;
-
-    [Header("Block Commands")]
-    [Tooltip("Tool/function names that should be treated as block object commands.")]
-    public string[] blockToolNames = { "list_interactables", "recolor_object", "get_interactable_state" };
 
     private readonly List<Message> _history = new List<Message>();
     private bool _isRequestRunning;
@@ -186,28 +174,17 @@ public class Gpt : MonoBehaviour
             // History update
             if (rememberHistory)
             {
-                _history.Add(new Message { role = "user", content = messages[messages.Count - 1].content });
-                if (!string.IsNullOrEmpty(assistantMessage.content))
+                _history.AddRange(new[]
                 {
-                    _history.Add(new Message { role = assistantMessage.role, content = assistantMessage.content });
-                }
+                    new Message { role = "user", content = messages[messages.Count - 1].content },
+                    new Message { role = assistantMessage.role, content = assistantMessage.content }
+                });
             }
 
             // Tool calls
-            if (assistantMessage.tool_calls != null && assistantMessage.tool_calls.Length > 0)
+            if (choice.tool_calls != null && choice.tool_calls.Length > 0)
             {
-                OnToolCalls?.Invoke(assistantMessage.tool_calls);
-                if (OnBlockToolCall != null && blockToolNames != null && blockToolNames.Length > 0)
-                {
-                    var names = new HashSet<string>(blockToolNames);
-                    foreach (var call in assistantMessage.tool_calls)
-                    {
-                        if (call?.function != null && names.Contains(call.function.name))
-                        {
-                            OnBlockToolCall.Invoke(call);
-                        }
-                    }
-                }
+                OnToolCalls?.Invoke(choice.tool_calls);
             }
 
             if (!string.IsNullOrEmpty(assistantMessage.content))
