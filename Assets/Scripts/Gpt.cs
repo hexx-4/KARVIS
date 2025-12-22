@@ -96,7 +96,7 @@ public class Gpt : MonoBehaviour
 
     [Header("Block Commands")]
     [Tooltip("Tool/function names that should be treated as block object commands.")]
-    public string[] blockToolNames = { "spawn_object", "recolor_object", "list_interactables" };
+    public string[] blockToolNames = { "list_interactables", "recolor_object", "get_interactable_state" };
 
     private readonly List<Message> _history = new List<Message>();
     private bool _isRequestRunning;
