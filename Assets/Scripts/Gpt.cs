@@ -92,6 +92,7 @@ public class Gpt : MonoBehaviour
         "create_ball",
         "create_disc",
         "create_mammae",
+        "remove_interactable",
     };
 
     private bool _isRequestRunning;
