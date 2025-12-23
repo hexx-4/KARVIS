@@ -87,6 +87,11 @@ public class Gpt : MonoBehaviour
         "set_rotation",
         "set_scale",
         "set_velocity",
+        "create_cube",
+        "create_cylinder",
+        "create_ball",
+        "create_disc",
+        "create_maemmae",
     };
 
     private bool _isRequestRunning;

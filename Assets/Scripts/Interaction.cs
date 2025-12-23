@@ -19,6 +19,28 @@ public class Interaction : MonoBehaviour
         public GameObject target;
     }
 
+    [Serializable]
+    public class InteractableTemplate
+    {
+        [Tooltip("Key used by the tool name (e.g., cube, cylinder, ball).")]
+        public string templateId;
+
+        [Tooltip("Optional friendly base-name used when auto-naming new instances.")]
+        public string defaultName = "object";
+
+        [Tooltip("Prefab that already contains a collider, Rigidbody, and grab component.")]
+        public GameObject prefab;
+
+        [Tooltip("Default position used when the tool does not provide one.")]
+        public Vector3 defaultSpawnPosition = new Vector3(0f, 1f, 0f);
+
+        [Tooltip("Default scale applied to the spawned object if the prefab scale is 1.")]
+        public Vector3 defaultScale = Vector3.one;
+
+        [Tooltip("Default initial velocity (applied to the object's Rigidbody).")]
+        public Vector3 defaultVelocity = Vector3.zero;
+    }
+
     [Header("References")]
     [Tooltip("The GPT chat client that raises block tool calls.")]
     public Gpt gpt;
@@ -26,6 +48,10 @@ public class Interaction : MonoBehaviour
     [Header("Interactables")]
     [Tooltip("Only these objects will be visible/controllable to the LLM tools.")]
     public List<Interactable> interactables = new List<Interactable>();
+
+    [Header("Templates")]
+    [Tooltip("Prefab templates that can be spawned at runtime via GPT tools.")]
+    public List<InteractableTemplate> templates = new List<InteractableTemplate>();
 
     [Header("Feedback")]
     [Tooltip("Optional event to surface tool results to UI/TTS/etc.")]
@@ -78,8 +104,53 @@ public class Interaction : MonoBehaviour
         public bool onlyGrabbed = true;
     }
 
+    [Serializable]
+    private class CreateArgs
+    {
+        public string name;
+        public SerializableVector3 position;
+        public SerializableQuaternion rotation;
+        public SerializableVector3 scale;
+        public SerializableVector3 velocity;
+        public string color;
+    }
+
+    [Serializable]
+    private class SerializableVector3
+    {
+        public float x;
+        public float y;
+        public float z;
+
+        public Vector3 ToVector3()
+        {
+            return new Vector3(x, y, z);
+        }
+    }
+
+    [Serializable]
+    private class SerializableQuaternion
+    {
+        public float x;
+        public float y;
+        public float z;
+        public float w;
+
+        public Quaternion ToQuaternion()
+        {
+            return new Quaternion(x, y, z, w);
+        }
+    }
+
+    private readonly Dictionary<string, Interactable> _interactableLookup = new Dictionary<string, Interactable>(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, InteractableTemplate> _templateLookup = new Dictionary<string, InteractableTemplate>(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, Type> _typeCache = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
+
     private void Awake()
     {
+        RebuildInteractableLookup();
+        EnsureTemplateLookup();
+
         if (gpt != null)
         {
             gpt.OnBlockToolCall.AddListener(HandleToolCall);
@@ -96,6 +167,79 @@ public class Interaction : MonoBehaviour
         {
             gpt.OnBlockToolCall.RemoveListener(HandleToolCall);
         }
+    }
+
+    private void RebuildInteractableLookup()
+    {
+        _interactableLookup.Clear();
+        foreach (var interactable in interactables)
+        {
+            if (interactable == null || interactable.target == null || string.IsNullOrWhiteSpace(interactable.name))
+            {
+                continue;
+            }
+
+            if (!_interactableLookup.ContainsKey(interactable.name))
+            {
+                _interactableLookup.Add(interactable.name, interactable);
+            }
+        }
+    }
+
+    private void EnsureTemplateLookup()
+    {
+        EnsureDefaultTemplates();
+        _templateLookup.Clear();
+        foreach (var template in templates)
+        {
+            if (template == null || string.IsNullOrWhiteSpace(template.templateId))
+            {
+                continue;
+            }
+
+            var key = template.templateId.Trim();
+            if (!_templateLookup.ContainsKey(key))
+            {
+                if (template.prefab == null)
+                {
+                    var resourcePath = $"InteractableTemplates/{key}";
+                    var loaded = Resources.Load<GameObject>(resourcePath);
+                    if (loaded != null)
+                    {
+                        template.prefab = loaded;
+                    }
+                }
+
+                _templateLookup.Add(key, template);
+            }
+        }
+    }
+
+    private void EnsureDefaultTemplates()
+    {
+        MaybeAddTemplate("cube", "cube", new Vector3(0f, 0f, 0f), Vector3.one);
+        MaybeAddTemplate("cylinder", "cylinder", new Vector3(0f, 0f, 0f), Vector3.one);
+        MaybeAddTemplate("ball", "ball", new Vector3(0f, 0f, 0f), Vector3.one);
+        MaybeAddTemplate("disc", "disc", new Vector3(0f, 0f, 0f), new Vector3(1f, 0.1f, 1f));
+        MaybeAddTemplate("maemmae", "maemmae", new Vector3(0f, 0f, 0f), new Vector3(0.15f, 4f, 0.15f));
+    }
+
+    private void MaybeAddTemplate(string id, string defaultName, Vector3 defaultVelocity, Vector3 defaultScale)
+    {
+        if (templates.Exists(t => t != null && string.Equals(t.templateId, id, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        var prefab = Resources.Load<GameObject>($"InteractableTemplates/{id}");
+        templates.Add(new InteractableTemplate
+        {
+            templateId = id,
+            defaultName = defaultName,
+            prefab = prefab,
+            defaultScale = defaultScale,
+            defaultVelocity = defaultVelocity
+        });
     }
 
     private void HandleToolCall(Gpt.ToolCall call)
@@ -130,6 +274,26 @@ public class Interaction : MonoBehaviour
 
             case "get_grabbed_interactables":
                 HandleGetGrabbed(call.function.arguments);
+                break;
+
+            case "create_cube":
+                HandleCreate(call.function.arguments, "cube");
+                break;
+
+            case "create_cylinder":
+                HandleCreate(call.function.arguments, "cylinder");
+                break;
+
+            case "create_ball":
+                HandleCreate(call.function.arguments, "ball");
+                break;
+
+            case "create_disc":
+                HandleCreate(call.function.arguments, "disc");
+                break;
+
+            case "create_maemmae":
+                HandleCreate(call.function.arguments, "maemmae");
                 break;
 
             default:
@@ -319,9 +483,156 @@ public class Interaction : MonoBehaviour
         SendFeedback(sb.ToString());
     }
 
+    private void HandleCreate(string argsJson, string templateId)
+    {
+        var args = JsonUtility.FromJson<CreateArgs>(string.IsNullOrEmpty(argsJson) ? "{}" : argsJson);
+        if (!_templateLookup.TryGetValue(templateId, out var template) || template.prefab == null)
+        {
+            SendFeedback($"create_{templateId}: '{templateId}' 템플릿 프리팹을 찾을 수 없습니다.");
+            return;
+        }
+
+        var instance = Instantiate(template.prefab);
+        var desiredName = string.IsNullOrWhiteSpace(args?.name) ? template.defaultName : args.name.Trim();
+        var finalName = GenerateUniqueName(string.IsNullOrWhiteSpace(desiredName) ? templateId : desiredName);
+        instance.name = finalName;
+
+        ApplyCreateArgs(instance, template, args);
+        EnsurePhysicsAndGrab(instance);
+
+        var interactable = new Interactable { name = finalName, target = instance };
+        interactables.Add(interactable);
+        _interactableLookup[finalName] = interactable;
+
+        SendFeedback($"create_{templateId}: '{finalName}'이(가) 생성되었습니다.");
+    }
+
+    private void ApplyCreateArgs(GameObject instance, InteractableTemplate template, CreateArgs args)
+    {
+        var t = instance.transform;
+        t.position = template.defaultSpawnPosition;
+        t.rotation = Quaternion.identity;
+        t.localScale = template.defaultScale == Vector3.zero ? Vector3.one : template.defaultScale;
+
+        if (args != null)
+        {
+            if (args.position != null)
+            {
+                t.position = args.position.ToVector3();
+            }
+
+            if (args.rotation != null)
+            {
+                t.rotation = args.rotation.ToQuaternion();
+            }
+
+            if (args.scale != null)
+            {
+                t.localScale = args.scale.ToVector3();
+            }
+        }
+
+        var renderer = instance.GetComponentInChildren<Renderer>();
+        if (renderer != null && !string.IsNullOrWhiteSpace(args?.color) && TryParseColor(args.color, out var parsedColor))
+        {
+            var mats = renderer.materials;
+            for (int i = 0; i < mats.Length; i++)
+            {
+                mats[i].color = parsedColor;
+            }
+        }
+
+        var rb = instance.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = template.defaultVelocity;
+            if (args?.velocity != null)
+            {
+                rb.linearVelocity = args.velocity.ToVector3();
+            }
+        }
+    }
+
+    private void EnsurePhysicsAndGrab(GameObject go)
+    {
+        var rb = go.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = go.AddComponent<Rigidbody>();
+        }
+
+        if (rb != null)
+        {
+            rb.useGravity = true;
+        }
+
+        if (!HasGrabComponent(go))
+        {
+            TryAddGrabComponent(go);
+        }
+    }
+
+    private bool HasGrabComponent(GameObject go)
+    {
+        return
+            GetComponentByName(go, "Meta.XR.Interaction.HandGrab.HandGrabInteractable") != null ||
+            GetComponentByName(go, "Oculus.Interaction.HandGrab.HandGrabInteractable") != null ||
+            GetComponentByName(go, "OVRGrabbable") != null ||
+            GetComponentByName(go, "Meta.XR.BuildingBlocks.Grabbable") != null;
+    }
+
+    private void TryAddGrabComponent(GameObject go)
+    {
+        var candidateTypes = new[]
+        {
+            "Meta.XR.BuildingBlocks.Grabbable, Meta.XR.BuildingBlocks",
+            "Meta.XR.Interaction.HandGrab.HandGrabInteractable, Meta.XR.Interaction",
+            "Oculus.Interaction.HandGrab.HandGrabInteractable, Oculus.Interaction",
+            "OVRGrabbable"
+        };
+
+        foreach (var typeName in candidateTypes)
+        {
+            var type = ResolveType(typeName);
+            if (type == null)
+            {
+                continue;
+            }
+
+            if (go.GetComponent(type) == null)
+            {
+                go.AddComponent(type);
+                return;
+            }
+        }
+
+        Debug.LogWarning("[Interaction] 그랩 가능한 컴포넌트를 찾을 수 없습니다. MetaXR/Oculus 패키지가 설치되어 있는지 확인하세요.");
+    }
+
     private Interactable FindInteractable(string name)
     {
-        return interactables.Find(i => i != null && i.target != null && string.Equals(i.name, name, StringComparison.OrdinalIgnoreCase));
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return null;
+        }
+
+        _interactableLookup.TryGetValue(name, out var interactable);
+        return interactable;
+    }
+
+    private string GenerateUniqueName(string desiredName)
+    {
+        var baseName = string.IsNullOrWhiteSpace(desiredName) ? "object" : desiredName.Trim();
+        var candidate = baseName;
+        var counter = 1;
+
+        while (_interactableLookup.ContainsKey(candidate))
+        {
+            candidate = $"{baseName}_{counter}";
+            counter++;
+        }
+
+        return candidate;
     }
 
     private string BuildSceneSummary()
@@ -361,6 +672,7 @@ public class Interaction : MonoBehaviour
             colorHex = ColorUtility.ToHtmlStringRGB(renderer.sharedMaterial.color);
         }
         var rb = interactable.target.GetComponent<Rigidbody>();
+        var velocity = rb != null ? rb.linearVelocity : Vector3.zero;
 
         bool grabbed = IsGrabbed(interactable.target);
 
@@ -389,9 +701,9 @@ public class Interaction : MonoBehaviour
             $"}}," +
 
             $"\"velocity\":{{" +
-                $"\"x\":{rb.linearVelocity.x:F2}," +
-                $"\"y\":{rb.linearVelocity.y:F2}," +
-                $"\"z\":{rb.linearVelocity.z:F2}" +
+                $"\"x\":{velocity.x:F2}," +
+                $"\"y\":{velocity.y:F2}," +
+                $"\"z\":{velocity.z:F2}" +
             $"}}," +
 
             $"\"color\":\"#{colorHex}\"," +
@@ -452,7 +764,7 @@ public class Interaction : MonoBehaviour
 
     private static Component GetComponentByName(GameObject go, string typeName)
     {
-        var type = Type.GetType(typeName);
+        var type = ResolveType(typeName);
         return type == null ? null : go.GetComponent(type);
     }
 
@@ -474,6 +786,51 @@ public class Interaction : MonoBehaviour
         }
 
         return HasBoolProperty(comp, "isGrabbed");
+    }
+
+    private static Type ResolveType(string typeName)
+    {
+        if (string.IsNullOrWhiteSpace(typeName))
+        {
+            return null;
+        }
+
+        if (_typeCache.TryGetValue(typeName, out var cached))
+        {
+            return cached;
+        }
+
+        var type = Type.GetType(typeName);
+        if (type != null)
+        {
+            _typeCache[typeName] = type;
+            return type;
+        }
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            type = assembly.GetType(typeName);
+            if (type != null)
+            {
+                _typeCache[typeName] = type;
+                return type;
+            }
+        }
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            foreach (var candidate in assembly.GetTypes())
+            {
+                if (string.Equals(candidate.Name, typeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    _typeCache[typeName] = candidate;
+                    return candidate;
+                }
+            }
+        }
+
+        _typeCache[typeName] = null;
+        return null;
     }
 
     private static bool HasBoolProperty(Component comp, string propertyName)
