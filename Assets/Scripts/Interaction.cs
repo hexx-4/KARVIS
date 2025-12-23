@@ -46,6 +46,20 @@ public class Interaction : MonoBehaviour
     }
 
     [Serializable]
+    private class RotationArgs
+    {
+        public string name;
+        public Quaternion rotation;
+    }
+
+    [Serializable]
+    private class ScaleArgs
+    {
+        public string name;
+        public Vector3 scale;
+    }
+
+    [Serializable]
     private class VelocityArgs
     {
         public string name;
@@ -72,7 +86,7 @@ public class Interaction : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[Interaction] GPT reference not set; tool calls will be ignored.");
+            Debug.LogWarning("[Interaction] GPT 참조가 설정되지 않았습니다; 도구 호출이 무시됩니다.");
         }
     }
 
@@ -93,10 +107,6 @@ public class Interaction : MonoBehaviour
 
         switch (call.function.name)
         {
-            case "list_interactables":
-                SendFeedback(BuildSceneSummary());
-                break;
-
             case "get_interactable_state":
                 HandleGetState(call.function.arguments);
                 break;
@@ -108,7 +118,12 @@ public class Interaction : MonoBehaviour
             case "set_position":
                 HandleSetPosition(call.function.arguments);
                 break;
-
+            case "set_rotation":
+                HandleSetRotation(call.function.arguments);
+                break;
+            case "set_scale":
+                HandleSetScale(call.function.arguments);
+                break;
             case "set_velocity":
                 HandleSetVelocity(call.function.arguments);
                 break;
@@ -118,7 +133,7 @@ public class Interaction : MonoBehaviour
                 break;
 
             default:
-                SendFeedback($"Unsupported tool '{call.function.name}'.");
+                SendFeedback($"지원되지 않는 도구 '{call.function.name}'.");
                 break;
         }
     }
@@ -128,14 +143,14 @@ public class Interaction : MonoBehaviour
         var args = JsonUtility.FromJson<StateArgs>(argsJson);
         if (args == null || string.IsNullOrWhiteSpace(args.name))
         {
-            SendFeedback("get_interactable_state failed: missing name.");
+            SendFeedback("get_interactable_state 실패: 이름이 누락되었습니다.");
             return;
         }
 
         var interactable = FindInteractable(args.name);
         if (interactable == null)
         {
-            SendFeedback($"get_interactable_state: '{args.name}' not found or not whitelisted.");
+            SendFeedback($"get_interactable_state: '{args.name}'을 찾을 수 없거나 화이트리스트에 없습니다.");
             return;
         }
 
@@ -147,27 +162,27 @@ public class Interaction : MonoBehaviour
         var args = JsonUtility.FromJson<RecolorArgs>(argsJson);
         if (args == null || string.IsNullOrWhiteSpace(args.name) || string.IsNullOrWhiteSpace(args.color))
         {
-            SendFeedback("recolor_object failed: missing name or color.");
+            SendFeedback("recolor_object 실패: 이름 또는 색상이 누락되었습니다.");
             return;
         }
 
         var interactable = FindInteractable(args.name);
         if (interactable == null)
         {
-            SendFeedback($"recolor_object: '{args.name}' not found or not whitelisted.");
+            SendFeedback($"recolor_object: '{args.name}'을 찾을 수 없거나 화이트리스트에 없습니다.");
             return;
         }
 
         var renderers = interactable.target.GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0)
         {
-            SendFeedback($"recolor_object: '{args.name}' has no renderer.");
+            SendFeedback($"recolor_object: '{args.name}'에 렌더러가 없습니다.");
             return;
         }
 
         if (!TryParseColor(args.color, out var parsed))
         {
-            SendFeedback($"recolor_object: could not parse color '{args.color}'. Use names or hex (#RRGGBB).");
+            SendFeedback($"recolor_object: 색상 '{args.color}'을 구문 분석할 수 없습니다. 이름이나 헥스(#RRGGBB)를 사용하세요.");
             return;
         }
 
@@ -180,7 +195,7 @@ public class Interaction : MonoBehaviour
             }
         }
 
-        SendFeedback($"recolor_object: '{args.name}' set to {ColorUtility.ToHtmlStringRGB(parsed)}.");
+        SendFeedback($"recolor_object: '{args.name}'이 {ColorUtility.ToHtmlStringRGB(parsed)}으로 설정되었습니다.");
     }
 
     private void HandleSetPosition(string argsJson)
@@ -188,19 +203,59 @@ public class Interaction : MonoBehaviour
         var args = JsonUtility.FromJson<PositionArgs>(argsJson);
         if (args == null || string.IsNullOrWhiteSpace(args.name))
         {
-            SendFeedback("set_position failed: missing name or position.");
+            SendFeedback("set_position 실패: 이름 또는 위치가 누락되었습니다.");
             return;
         }
 
         var interactable = FindInteractable(args.name);
         if (interactable == null)
         {
-            SendFeedback($"set_position: '{args.name}' not found or not whitelisted.");
+            SendFeedback($"set_position: '{args.name}'을 찾을 수 없거나 화이트리스트에 없습니다.");
             return;
         }
 
         interactable.target.transform.position = args.position;
-        SendFeedback($"set_position: '{args.name}' moved to ({args.position.x:F2},{args.position.y:F2},{args.position.z:F2}).");
+        SendFeedback($"set_position: '{args.name}'이 ({args.position.x:F2},{args.position.y:F2},{args.position.z:F2})로 이동되었습니다.");
+    }
+
+    private void HandleSetRotation(string argsJson)
+    {
+        var args = JsonUtility.FromJson<RotationArgs>(argsJson);
+        if (args == null || string.IsNullOrWhiteSpace(args.name))
+        {
+            SendFeedback("set_rotation 실패: 이름 또는 회전이 누락되었습니다.");
+            return;
+        }
+
+        var interactable = FindInteractable(args.name);
+        if (interactable == null)
+        {
+            SendFeedback($"set_rotation: '{args.name}'을 찾을 수 없거나 화이트리스트에 없습니다.");
+            return;
+        }
+
+        interactable.target.transform.rotation = args.rotation;
+        SendFeedback($"set_rotation: '{args.name}'이 ({args.rotation.x:F4},{args.rotation.y:F4},{args.rotation.z:F4},{args.rotation.w:F4})로 회전되었습니다.");
+    }
+
+    private void HandleSetScale(string argsJson)
+    {
+        var args = JsonUtility.FromJson<ScaleArgs>(argsJson);
+        if (args == null || string.IsNullOrWhiteSpace(args.name))
+        {
+            SendFeedback("set_scale 실패: 이름 또는 크기가 누락되었습니다.");
+            return;
+        }
+
+        var interactable = FindInteractable(args.name);
+        if (interactable == null)
+        {
+            SendFeedback($"set_scale: '{args.name}'을 찾을 수 없거나 화이트리스트에 없습니다.");
+            return;
+        }
+
+        interactable.target.transform.localScale = args.scale;
+        SendFeedback($"set_scale: '{args.name}'이 ({args.scale.x:F2},{args.scale.y:F2},{args.scale.z:F2})로 크기가 조정되었습니다.");
     }
 
     private void HandleSetVelocity(string argsJson)
@@ -208,26 +263,26 @@ public class Interaction : MonoBehaviour
         var args = JsonUtility.FromJson<VelocityArgs>(argsJson);
         if (args == null || string.IsNullOrWhiteSpace(args.name))
         {
-            SendFeedback("set_velocity failed: missing name or velocity.");
+            SendFeedback("set_velocity 실패: 이름 또는 속도가 누락되었습니다.");
             return;
         }
 
         var interactable = FindInteractable(args.name);
         if (interactable == null)
         {
-            SendFeedback($"set_velocity: '{args.name}' not found or not whitelisted.");
+            SendFeedback($"set_velocity: '{args.name}'을 찾을 수 없거나 화이트리스트에 없습니다.");
             return;
         }
 
         var rb = interactable.target.GetComponent<Rigidbody>();
         if (rb == null)
         {
-            SendFeedback($"set_velocity: '{args.name}' has no Rigidbody.");
+            SendFeedback($"set_velocity: '{args.name}'에 Rigidbody가 없습니다.");
             return;
         }
 
-        rb.velocity = args.velocity;
-        SendFeedback($"set_velocity: '{args.name}' velocity set to ({args.velocity.x:F2},{args.velocity.y:F2},{args.velocity.z:F2}).");
+        rb.linearVelocity = args.velocity;
+        SendFeedback($"set_velocity: '{args.name}'의 속도가 ({args.velocity.x:F2},{args.velocity.y:F2},{args.velocity.z:F2})로 설정되었습니다.");
     }
 
     private void HandleGetGrabbed(string argsJson)
@@ -272,7 +327,7 @@ public class Interaction : MonoBehaviour
     private string BuildSceneSummary()
     {
         var sb = new StringBuilder();
-        sb.Append("{\"interactables\":[");
+        sb.Append("[");
 
         bool first = true;
         foreach (var interactable in interactables)
@@ -291,12 +346,13 @@ public class Interaction : MonoBehaviour
             first = false;
         }
 
-        sb.Append("]}");
+        sb.Append("]");
         return sb.ToString();
     }
 
     private string BuildSingleSummary(Interactable interactable)
     {
+        Debug.Log($"{interactable.name}에 대한 요약을 작성 중");
         var t = interactable.target.transform;
         var renderer = interactable.target.GetComponentInChildren<Renderer>();
         string colorHex = "unknown";
@@ -305,11 +361,43 @@ public class Interaction : MonoBehaviour
             colorHex = ColorUtility.ToHtmlStringRGB(renderer.sharedMaterial.color);
         }
         var rb = interactable.target.GetComponent<Rigidbody>();
-        var velocity = rb != null ? rb.velocity : Vector3.zero;
 
         bool grabbed = IsGrabbed(interactable.target);
 
-        return $"{{\"name\":\"{interactable.name}\",\"position\":{{\"x\":{t.position.x:F2},\"y\":{t.position.y:F2},\"z\":{t.position.z:F2}}},\"velocity\":{{\"x\":{velocity.x:F2},\"y\":{velocity.y:F2},\"z\":{velocity.z:F2}}},\"color\":\"#{colorHex}\",\"grabbed\":{grabbed.ToString().ToLowerInvariant()}}}";
+        return
+            $"{{" +
+            $"\"type\":\"available_objects\"," +
+            $"\"name\":\"{interactable.name}\"," +
+
+            $"\"position\":{{" +
+                $"\"x\":{t.position.x:F2}," +
+                $"\"y\":{t.position.y:F2}," +
+                $"\"z\":{t.position.z:F2}" +
+            $"}}," +
+
+            $"\"rotation\":{{" +
+                $"\"x\":{t.rotation.x:F4}," +
+                $"\"y\":{t.rotation.y:F4}," +
+                $"\"z\":{t.rotation.z:F4}," +
+                $"\"w\":{t.rotation.w:F4}" +
+            $"}}," +
+
+            $"\"scale\":{{" +
+                $"\"x\":{t.localScale.x:F2}," +
+                $"\"y\":{t.localScale.y:F2}," +
+                $"\"z\":{t.localScale.z:F2}" +
+            $"}}," +
+
+            $"\"velocity\":{{" +
+                $"\"x\":{rb.linearVelocity.x:F2}," +
+                $"\"y\":{rb.linearVelocity.y:F2}," +
+                $"\"z\":{rb.linearVelocity.z:F2}" +
+            $"}}," +
+
+            $"\"color\":\"#{colorHex}\"," +
+            $"\"grabbed\":{grabbed.ToString().ToLowerInvariant()}" +
+            $"}}";
+
     }
 
     private static bool TryParseColor(string input, out Color color)
@@ -413,4 +501,67 @@ public class Interaction : MonoBehaviour
         OnToolActionFeedback?.Invoke(text);
         Debug.Log($"[Interaction] {text}");
     }
+
+    // ===== Editor / Debug API =====
+
+    public void Editor_ListInteractables()
+    {
+        SendFeedback(BuildSceneSummary());
+    }
+
+    public void Editor_Recolor(string name, string color)
+    {
+        HandleRecolor(JsonUtility.ToJson(new RecolorArgs
+        {
+            name = name,
+            color = color
+        }));
+    }
+
+    public void Editor_SetPosition(string name, Vector3 position)
+    {
+        HandleSetPosition(JsonUtility.ToJson(new PositionArgs
+        {
+            name = name,
+            position = position
+        }));
+    }
+
+    public void Editor_SetRotation(string name, Quaternion rotation)
+    {
+        HandleSetRotation(JsonUtility.ToJson(new RotationArgs
+        {
+            name = name,
+            rotation = rotation
+        }));
+    }
+
+    public void Editor_SetScale(string name, Vector3 scale)
+    {
+        HandleSetScale(JsonUtility.ToJson(new ScaleArgs
+        {
+            name = name,
+            scale = scale
+        }));
+    }
+
+    public void Editor_SetVelocity(string name, Vector3 velocity)
+    {
+        HandleSetVelocity(JsonUtility.ToJson(new VelocityArgs
+        {
+            name = name,
+            velocity = velocity
+        }));
+    }
+
+    public void Editor_GetGrabbed()
+    {
+        HandleGetGrabbed("{}");
+    }
+
+    public string Editor_ListInteractables_ForGPT()
+    {
+        return BuildSceneSummary();
+    }
+
 }

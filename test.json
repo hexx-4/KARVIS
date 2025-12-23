@@ -1,0 +1,73 @@
+{"tools": {"functions": [{
+    "type": "function",
+    "function": {
+      "name": "recolor_object",
+      "description": "Change the color of an interactable object.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the interactable object."
+          },
+          "color": {
+            "type": "string",
+            "description": "Color name (red, blue, green) or hex value (#RRGGBB)."
+          }
+        },
+        "required": ["name", "color"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "set_position",
+      "description": "Move an interactable object to a new world position.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the interactable object."
+          },
+          "position": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            },
+            "required": ["x", "y", "z"]
+          }
+        },
+        "required": ["name", "position"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "set_velocity",
+      "description": "Set the velocity of an interactable object that has a Rigidbody.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the interactable object."
+          },
+          "velocity": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            },
+            "required": ["x", "y", "z"]
+          }
+        },
+        "required": ["name", "velocity"]
+      }
+    }
+  }], "interactables":[{"type":"available_objects","name":"작은 큐브","position":{"x":0.2900811,"y":-0.4316909,"z":0.04925368},"velocity":{"x":0.0766248,"y":-0.02707559,"z":0.02639449},"color":"#0052FF","grabbed":false},{"type":"available_objects","name":"큰 큐브","position":{"x":0.01010898,"y":-0.3809218,"z":-0.03318506},"velocity":{"x":-0.001036417,"y":-0.0002342761,"z":0.004528148},"color":"#63FF00","grabbed":false},{"type":"available_objects","name":"Plate","position":{"x":-0.02028905,"y":-0.2731801,"z":0.04464289},"velocity":{"x":4.633563E-06,"y":-0.002053335,"z":0.00772007},"color":"#63FF00","grabbed":false},{"type":"available_objects","name":"점수판","position":{"x":-0.01596688,"y":-0.4903227,"z":-0.001659814},"velocity":{"x":6.094461E-05,"y":-0.004663035,"z":-2.499905E-05},"color":"#FFFFFF","grabbed":false},{"type":"available_objects","name":"원기둥","position":{"x":-0.02195837,"y":-0.1868434,"z":0.09710377},"velocity":{"x":-0.004468384,"y":-0.006409511,"z":0.01741356},"color":"#FFC400","grabbed":false},{"type":"available_objects","name":"맴매","position":{"x":0.1863765,"y":-0.457188,"z":0.2941598},"velocity":{"x":0.08147223,"y":-0.007458329,"z":0.009358548},"color":"#FF0D00","grabbed":false},{"type":"available_objects","name":"공1","position":{"x":-4.6789,"y":-0.39,"z":0.2011667},"velocity":{"x":-0.5654517,"y":-2.980232E-07,"z":0.0003786935},"color":"#FFFFFF","grabbed":false},{"type":"available_objects","name":"공2","position":{"x":-1.387712,"y":-0.39,"z":0.4277466},"velocity":{"x":-0.486332,"y":-2.980232E-07,"z":0.1069642},"color":"#FFFFFF","grabbed":false},{"type":"available_objects","name":"공3","position":{"x":3.617327,"y":-0.39,"z":0.1997881},"velocity":{"x":0.5213793,"y":-2.980232E-07,"z":1.238719E-05},"color":"#FFFFFF","grabbed":false},{"type":"available_objects","name":"공4","position":{"x":3.871026,"y":-0.39,"z":0.1997571},"velocity":{"x":0.5235698,"y":-2.980232E-07,"z":2.89629E-06},"color":"#FFFFFF","grabbed":false}]}}

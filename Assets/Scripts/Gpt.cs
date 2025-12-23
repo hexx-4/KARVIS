@@ -1,51 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 
-/// <summary>
-/// Minimal OpenAI ChatCompletion client for Unity.
-/// - Supports GPT-4o(-mini) text/vision endpoints.
-/// - Accepts optional raw tools JSON so you can use function calling without adding a full JSON serializer.
-/// - Keeps an in-memory history when <see cref="rememberHistory"/> is true.
-///
-/// This script intentionally avoids extra dependencies so it can be dropped into the current project
-/// without additional packages. Tool handling is surfaced via events so you can wire your own
-/// scene-logic callbacks.
-/// </summary>
 public class Gpt : MonoBehaviour
 {
-    [Header("OpenAI Settings")]
-    [Tooltip("OpenAI API Key. Do NOT commit real keys; inject via inspector or a secure loader.")]
-    public string apiKey;
-
-    [Tooltip("ChatCompletions endpoint.")]
+    [Header("OpenAI")]
+    private string apiKey = File.ReadAllText("Assets/Config/openai.env").Trim();
     public string apiUrl = "https://api.openai.com/v1/chat/completions";
-
-    [Tooltip("Model name, e.g. gpt-4o-mini or gpt-4o.")]
     public string model = "gpt-4o-mini";
 
-    [Header("Prompt & History")]
-    [Tooltip("Optional system prompt injected at the start of each conversation.")]
+    [Header("Prompt")]
     [TextArea]
-    public string systemPrompt = "You are a helpful VR assistant.";
+    public string systemPrompt;
 
-    [Tooltip("Keep previous turns in memory. If disabled, each call is stateless.")]
-    public bool rememberHistory = true;
+    [Header("Scene Context")]
+    public Interaction interaction;
+    public bool injectSceneContext = true;
 
-    [Header("Tools (Function Calling)")]
-    [Tooltip("Raw JSON array for tools. This allows function calling without a custom JSON serializer.")]
+    [Header("Tools")]
     [TextArea(5, 12)]
-    public string toolsJson;
-
-    [Tooltip("If true, the request will include the tools JSON (when provided)." )]
-    public bool includeTools = false;
+    private string toolsJson = File.ReadAllText("Assets/Config/tools.json").Trim();
+    public bool includeTools = true;
 
     [Header("Networking")]
-    [Tooltip("Request timeout in seconds.")]
     public int timeoutSeconds = 30;
+
+    // ===== OpenAI DTOs =====
 
     [System.Serializable]
     public class Message
@@ -89,156 +73,177 @@ public class Gpt : MonoBehaviour
         public Choice[] choices;
     }
 
-    [Header("Events")]
+    // ===== Events =====
+
     public UnityEvent<string> OnAssistantMessage;
     public UnityEvent<ToolCall[]> OnToolCalls;
     public UnityEvent<ToolCall> OnBlockToolCall;
 
-    [Header("Block Commands")]
-    [Tooltip("Tool/function names that should be treated as block object commands.")]
-    public string[] blockToolNames = { "list_interactables", "get_interactable_state", "get_grabbed_interactables", "recolor_object", "set_position", "set_velocity" };
+    [Header("Block Tool Names")]
+    public string[] blockToolNames =
+    {
+        "recolor_object",
+        "set_position",
+        "set_rotation",
+        "set_scale",
+        "set_velocity",
+    };
 
-    private readonly List<Message> _history = new List<Message>();
     private bool _isRequestRunning;
 
-    /// <summary>
-    /// Sends a user message to the model. If rememberHistory is true, conversation turns are preserved in memory.
-    /// </summary>
-    public void SendUserMessage(string text, string overrideToolsJson = null)
-    {
-        if (string.IsNullOrWhiteSpace(apiKey))
-        {
-            Debug.LogError("[Gpt] API key is empty. Please set it in the inspector or inject securely at runtime.");
-            return;
-        }
+    // =========================================================
+    // PUBLIC API
+    // =========================================================
 
+    public void SendUserMessage(string userText, string interactables)
+    {
         if (_isRequestRunning)
         {
-            Debug.LogWarning("[Gpt] Request already in flight; skipping this call.");
+            Debug.LogWarning("[Gpt] Request already running.");
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrWhiteSpace(apiKey))
         {
-            Debug.LogWarning("[Gpt] Empty user message; ignoring.");
+            Debug.LogError("[Gpt] API key missing.");
             return;
         }
 
-        var messages = new List<Message>();
-
-        if (rememberHistory)
+        if (string.IsNullOrWhiteSpace(userText))
         {
-            if (_history.Count == 0 && !string.IsNullOrWhiteSpace(systemPrompt))
-            {
-                messages.Add(new Message { role = "system", content = systemPrompt });
-            }
-
-            messages.AddRange(_history);
-        }
-        else if (!string.IsNullOrWhiteSpace(systemPrompt))
-        {
-            messages.Add(new Message { role = "system", content = systemPrompt });
+            Debug.LogWarning("[Gpt] Empty user input.");
+            return;
         }
 
-        messages.Add(new Message { role = "user", content = text });
-
-        var tools = includeTools ? (!string.IsNullOrWhiteSpace(overrideToolsJson) ? overrideToolsJson : toolsJson) : null;
-        StartCoroutine(SendRequest(messages, tools));
+        var messages = BuildMessages(userText);
+        StartCoroutine(SendRequest(messages));
     }
 
-    private IEnumerator SendRequest(List<Message> messages, string tools)
+    // =========================================================
+    // MESSAGE BUILDING
+    // =========================================================
+
+    private List<Message> BuildMessages(string userText)
+    {
+        var messages = new List<Message>();
+
+        var systemBuilder = new StringBuilder();
+        systemBuilder.Append(systemPrompt);
+
+        if (injectSceneContext && interaction != null)
+        {
+            systemBuilder.Append("\n\nCurrent scene state:\n");
+            systemBuilder.Append(interaction.Editor_ListInteractables_ForGPT());
+        }
+
+        messages.Add(new Message
+        {
+            role = "system",
+            content = systemBuilder.ToString()
+        });
+
+        messages.Add(new Message
+        {
+            role = "user",
+            content = $"사용자의 말: \"{userText}\"\n\n오브젝트 상태: ```{interaction.Editor_ListInteractables_ForGPT()}```"
+        });
+
+        return messages;
+    }
+
+    // =========================================================
+    // REQUEST
+    // =========================================================
+
+    private IEnumerator SendRequest(List<Message> messages)
     {
         _isRequestRunning = true;
 
-        var body = BuildRequestBody(messages, tools);
+        var body = BuildRequestBody(messages);
         var bodyRaw = Encoding.UTF8.GetBytes(body);
 
-        using (var request = new UnityWebRequest(apiUrl, UnityWebRequest.kHttpVerbPOST))
+        using (var req = new UnityWebRequest(apiUrl, "POST"))
         {
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("Authorization", $"Bearer {apiKey}");
-            request.timeout = timeoutSeconds;
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.SetRequestHeader("Authorization", $"Bearer {apiKey}");
+            req.timeout = timeoutSeconds;
 
-            yield return request.SendWebRequest();
+            yield return req.SendWebRequest();
 
-            if (request.result != UnityWebRequest.Result.Success)
+            if (req.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"[Gpt] Request failed: {request.error}\n{request.downloadHandler.text}");
+                Debug.LogError($"[Gpt] Error: {req.error}\n{req.downloadHandler.text}");
                 _isRequestRunning = false;
                 yield break;
             }
 
-            var json = request.downloadHandler.text;
-            var response = JsonUtility.FromJson<ChatCompletionResponse>(json);
-
-            if (response?.choices == null || response.choices.Length == 0)
-            {
-                Debug.LogWarning("[Gpt] Empty response or choices.");
-                _isRequestRunning = false;
-                yield break;
-            }
-
-            var choice = response.choices[0];
-            var assistantMessage = choice.message;
-
-            // History update
-            if (rememberHistory)
-            {
-                _history.Add(new Message { role = "user", content = messages[messages.Count - 1].content });
-                if (!string.IsNullOrEmpty(assistantMessage.content))
-                {
-                    _history.Add(new Message { role = assistantMessage.role, content = assistantMessage.content });
-                }
-            }
-
-            // Tool calls
-            if (assistantMessage.tool_calls != null && assistantMessage.tool_calls.Length > 0)
-            {
-                OnToolCalls?.Invoke(assistantMessage.tool_calls);
-                if (OnBlockToolCall != null && blockToolNames != null && blockToolNames.Length > 0)
-                {
-                    var names = new HashSet<string>(blockToolNames);
-                    foreach (var call in assistantMessage.tool_calls)
-                    {
-                        if (call?.function != null && names.Contains(call.function.name))
-                        {
-                            OnBlockToolCall.Invoke(call);
-                        }
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(assistantMessage.content))
-            {
-                OnAssistantMessage?.Invoke(assistantMessage.content);
-            }
+            HandleResponse(req.downloadHandler.text);
         }
 
         _isRequestRunning = false;
     }
 
-    private string BuildRequestBody(List<Message> messages, string tools)
+    // =========================================================
+    // RESPONSE
+    // =========================================================
+
+    private void HandleResponse(string json)
+    {
+        var response = JsonUtility.FromJson<ChatCompletionResponse>(json);
+
+        if (response?.choices == null || response.choices.Length == 0)
+        {
+            Debug.LogWarning("[Gpt] Empty response.");
+            return;
+        }
+
+        var msg = response.choices[0].message;
+
+        if (!string.IsNullOrEmpty(msg.content))
+        {
+            OnAssistantMessage?.Invoke(msg.content);
+        }
+
+        if (msg.tool_calls != null && msg.tool_calls.Length > 0)
+        {
+            OnToolCalls?.Invoke(msg.tool_calls);
+
+            var blockSet = new HashSet<string>(blockToolNames);
+            foreach (var call in msg.tool_calls)
+            {
+                if (call?.function != null &&
+                    blockSet.Contains(call.function.name))
+                {
+                    OnBlockToolCall?.Invoke(call);
+                }
+            }
+        }
+    }
+
+    // =========================================================
+    // JSON
+    // =========================================================
+
+    private string BuildRequestBody(List<Message> messages)
     {
         var sb = new StringBuilder();
         sb.Append("{");
         sb.Append("\"model\":\"").Append(model).Append("\",");
         sb.Append("\"messages\":[");
+
         for (int i = 0; i < messages.Count; i++)
         {
             sb.Append(JsonUtility.ToJson(messages[i]));
-            if (i < messages.Count - 1)
-            {
-                sb.Append(",");
-            }
+            if (i < messages.Count - 1) sb.Append(",");
         }
+
         sb.Append("]");
 
-        if (!string.IsNullOrWhiteSpace(tools))
+        if (includeTools && !string.IsNullOrWhiteSpace(toolsJson))
         {
-            sb.Append(",\"tools\":");
-            sb.Append(tools);
+            sb.Append($",\"tools\": {toolsJson}");
             sb.Append(",\"tool_choice\":\"auto\"");
         }
 

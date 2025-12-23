@@ -1,0 +1,191 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "recolor_object",
+            "description": "Change the color of an interactable object.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the interactable object."
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Color name (red, blue, green) or hex value (#RRGGBB)."
+                    }
+                },
+                "required": [
+                    "name",
+                    "color"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "set_position",
+            "description": "Move an interactable object to a new world position.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the interactable object."
+                    },
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y",
+                            "z"
+                        ]
+                    }
+                },
+                "required": [
+                    "name",
+                    "position"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "set_velocity",
+            "description": "Set the velocity of an interactable object that has a Rigidbody.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the interactable object."
+                    },
+                    "velocity": {
+                        "type": "object",
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y",
+                            "z"
+                        ]
+                    }
+                },
+                "required": [
+                    "name",
+                    "velocity"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "set_rotation",
+            "description": "Set the world rotation of an interactable object using a Quaternion.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the interactable object."
+                    },
+                    "rotation": {
+                        "type": "object",
+                        "description": "Quaternion rotation.",
+                        "properties": {
+                            "x": {
+                                "type": "number",
+                                "description": "Quaternion X component."
+                            },
+                            "y": {
+                                "type": "number",
+                                "description": "Quaternion Y component."
+                            },
+                            "z": {
+                                "type": "number",
+                                "description": "Quaternion Z component."
+                            },
+                            "w": {
+                                "type": "number",
+                                "description": "Quaternion W component."
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y",
+                            "z",
+                            "w"
+                        ]
+                    }
+                },
+                "required": [
+                    "name",
+                    "rotation"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "set_scale",
+            "description": "Set the local scale of an interactable object.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the interactable object."
+                    },
+                    "scale": {
+                        "type": "object",
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y",
+                            "z"
+                        ]
+                    }
+                },
+                "required": [
+                    "name",
+                    "scale"
+                ]
+            }
+        }
+    }
+]
