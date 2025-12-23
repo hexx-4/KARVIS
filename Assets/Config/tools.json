@@ -187,5 +187,274 @@
                 ]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_cube",
+            "description": "Spawn a cube interactable from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Optional custom name for the cube. If omitted, a unique name will be generated."
+                    },
+                    "position": {
+                        "type": "object",
+                        "description": "Optional spawn position.",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "rotation": {
+                        "type": "object",
+                        "description": "Optional spawn rotation as a quaternion.",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" },
+                            "w": { "type": "number" }
+                        }
+                    },
+                    "scale": {
+                        "type": "object",
+                        "description": "Optional scale override.",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "velocity": {
+                        "type": "object",
+                        "description": "Optional initial linear velocity applied to the Rigidbody.",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Optional starting color (hex or named color)."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_cylinder",
+            "description": "Spawn a cylinder interactable from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Optional custom name for the cylinder."
+                    },
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "rotation": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" },
+                            "w": { "type": "number" }
+                        }
+                    },
+                    "scale": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "velocity": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Optional starting color (hex or named color)."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_ball",
+            "description": "Spawn a soccer-ball-style sphere interactable from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Optional custom name for the ball."
+                    },
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "rotation": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" },
+                            "w": { "type": "number" }
+                        }
+                    },
+                    "scale": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "velocity": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Optional starting color (hex or named color)."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_disc",
+            "description": "Spawn a thin disc interactable (curling material) from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Optional custom name for the disc."
+                    },
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "rotation": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" },
+                            "w": { "type": "number" }
+                        }
+                    },
+                    "scale": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "velocity": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Optional starting color (hex or named color)."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_maemmae",
+            "description": "Spawn a long, thin cylinder (maemmae) from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Optional custom name for the maemmae object."
+                    },
+                    "position": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "rotation": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" },
+                            "w": { "type": "number" }
+                        }
+                    },
+                    "scale": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "velocity": {
+                        "type": "object",
+                        "properties": {
+                            "x": { "type": "number" },
+                            "y": { "type": "number" },
+                            "z": { "type": "number" }
+                        }
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Optional starting color (hex or named color)."
+                    }
+                }
+            }
+        }
     }
 ]
