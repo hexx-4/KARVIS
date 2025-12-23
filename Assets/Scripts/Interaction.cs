@@ -108,6 +108,12 @@ public class Interaction : MonoBehaviour
     }
 
     [Serializable]
+    private class RemoveArgs
+    {
+        public string name;
+    }
+
+    [Serializable]
     private class CreateArgs
     {
         public string name;
@@ -277,6 +283,10 @@ public class Interaction : MonoBehaviour
 
             case "get_grabbed_interactables":
                 HandleGetGrabbed(call.function.arguments);
+                break;
+
+            case "remove_interactable":
+                HandleRemove(call.function.arguments);
                 break;
 
             case "create_cube":
@@ -484,6 +494,33 @@ public class Interaction : MonoBehaviour
 
         sb.Append("]}");
         SendFeedback(sb.ToString());
+    }
+
+    private void HandleRemove(string argsJson)
+    {
+        var args = JsonUtility.FromJson<RemoveArgs>(argsJson);
+        if (args == null || string.IsNullOrWhiteSpace(args.name))
+        {
+            SendFeedback("제거할 오브젝트의 이름이 필요합니다.");
+            return;
+        }
+
+        var interactable = FindInteractable(args.name);
+        if (interactable == null)
+        {
+            SendFeedback($"'{args.name}'을(를) 찾을 수 없거나 화이트리스트에 없습니다.");
+            return;
+        }
+
+        interactables.Remove(interactable);
+        _interactableLookup.Remove(interactable.name);
+
+        if (interactable.target != null)
+        {
+            Destroy(interactable.target);
+        }
+
+        SendFeedback($"'{args.name}'이(가) 제거되었습니다.");
     }
 
     private void HandleCreate(string argsJson, string templateId)

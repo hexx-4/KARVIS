@@ -26,6 +26,25 @@
     {
         "type": "function",
         "function": {
+            "name": "remove_interactable",
+            "description": "Remove an interactable object from the scene and whitelist.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the interactable object to remove."
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "set_position",
             "description": "Move an interactable object to a new world position.",
             "parameters": {
