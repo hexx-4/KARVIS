@@ -91,7 +91,7 @@ public class Gpt : MonoBehaviour
         "create_cylinder",
         "create_ball",
         "create_disc",
-        "create_maemmae",
+        "create_mammae",
     };
 
     private bool _isRequestRunning;

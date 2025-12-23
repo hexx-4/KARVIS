@@ -204,37 +204,63 @@
                         "type": "object",
                         "description": "Optional spawn position.",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "rotation": {
                         "type": "object",
                         "description": "Optional spawn rotation as a quaternion.",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" },
-                            "w": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            },
+                            "w": {
+                                "type": "number"
+                            }
                         }
                     },
                     "scale": {
                         "type": "object",
                         "description": "Optional scale override.",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "velocity": {
                         "type": "object",
                         "description": "Optional initial linear velocity applied to the Rigidbody.",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "color": {
@@ -260,34 +286,60 @@
                     "position": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "rotation": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" },
-                            "w": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            },
+                            "w": {
+                                "type": "number"
+                            }
                         }
                     },
                     "scale": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "velocity": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "color": {
@@ -313,34 +365,60 @@
                     "position": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "rotation": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" },
-                            "w": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            },
+                            "w": {
+                                "type": "number"
+                            }
                         }
                     },
                     "scale": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "velocity": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "color": {
@@ -366,34 +444,60 @@
                     "position": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "rotation": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" },
-                            "w": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            },
+                            "w": {
+                                "type": "number"
+                            }
                         }
                     },
                     "scale": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "velocity": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "color": {
@@ -407,46 +511,72 @@
     {
         "type": "function",
         "function": {
-            "name": "create_maemmae",
-            "description": "Spawn a long, thin cylinder (maemmae) from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "name": "create_mammae",
+            "description": "Spawn a long, thin cylinder (mammae) from the prefab template (with Rigidbody + MetaXR grabbable).",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Optional custom name for the maemmae object."
+                        "description": "Optional custom name for the mammae object."
                     },
                     "position": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "rotation": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" },
-                            "w": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            },
+                            "w": {
+                                "type": "number"
+                            }
                         }
                     },
                     "scale": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "velocity": {
                         "type": "object",
                         "properties": {
-                            "x": { "type": "number" },
-                            "y": { "type": "number" },
-                            "z": { "type": "number" }
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
                         }
                     },
                     "color": {

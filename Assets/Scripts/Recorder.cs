@@ -2,6 +2,7 @@ using UnityEngine;
 using Meta.XR;
 using Meta.XR.BuildingBlocks.AIBlocks;
 using TMPro;
+using UnityEngine.InputSystem;
 
 
 public class Recorder : MonoBehaviour
@@ -9,23 +10,16 @@ public class Recorder : MonoBehaviour
     public string promptText;
     public string responseText;
     public TMP_Text resultText;
-    public TMP_Text CamSyncText;
     public SpeechToTextAgent sttAgent;
     public TTS ttsAgent;
 
-    public GptHandler gpt;
-    public string role;
+    public Gpt gpt;
+    public Interaction interaction;
     public AudioSource on;
     public AudioSource off;
-    public Transform[] balls;
-    public Transform[] cubes;
-    public Transform[] cylinders;
 
     void Start()
     {
-        balls = GameObject.Find("Balls").GetComponentsInChildren<Transform>();
-        cubes = GameObject.Find("Cubes").GetComponentsInChildren<Transform>();
-        cylinders = GameObject.Find("Cylinders").GetComponentsInChildren<Transform>();
         if (Microphone.devices.Length > 0)
         {
             Debug.Log("[KARVIS] Microphone device found: " + Microphone.devices[0]);
@@ -39,43 +33,21 @@ public class Recorder : MonoBehaviour
     void Update()
     {
         // RT 버튼 Down
-        if (OVRInput.GetDown(OVRInput.Button.One) && !ttsAgent.isResponding)
+        if ((OVRInput.GetDown(OVRInput.Button.One) && !ttsAgent.isResponding) || (Keyboard.current.rKey.wasPressedThisFrame && !ttsAgent.isResponding))
         {
-            on.Play();
+            on.Play();  
             sttAgent.StartListening();
             promptText = "Q. \" (listening) \" ";
             resultText.text = promptText + "\n" + responseText;
         }
 
         // RT 버튼 Up
-        if (OVRInput.GetUp(OVRInput.Button.One) && !ttsAgent.isResponding)
+        if ((OVRInput.GetUp(OVRInput.Button.One) && !ttsAgent.isResponding) || (Keyboard.current.rKey.wasReleasedThisFrame && !ttsAgent.isResponding))
         {
             off.Play();
             sttAgent.StopNow();
             responseText = "A. \" (waiting) \" ";
             resultText.text = promptText + "\n" + responseText;
-        }
-
-        if (OVRInput.Get(OVRInput.Button.Three))
-        {   
-            foreach (Transform t in balls)
-            {
-                t.transform.position = new Vector3(0, 1, 0);
-            }
-        }
-
-        if (OVRInput.GetDown(OVRInput.Button.Four))
-        {
-            if (!gpt.includeImage)
-            {
-                gpt.includeImage = true;
-                CamSyncText.text = "[Y] 카메라 동기화 ON";
-            }
-            else
-            {
-                gpt.includeImage = false;
-                CamSyncText.text = "[Y] 카메라 동기화 OFF";
-            }
         }
     }
     public void OnFinalResult(string text)
@@ -86,7 +58,7 @@ public class Recorder : MonoBehaviour
         promptText = "Q. \" " + text + " \" ";
         resultText.text = promptText + "\n" + responseText;
         ttsAgent.isResponding = true;
-        gpt.SendPrompt($"System: \"{role}\" / User: \"{text}\"");
+        gpt.SendUserMessage(text, interaction.Editor_ListInteractables_ForGPT());
 
     }
     public void OnGptResponseReceived(string response)
