@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 public class Gpt : MonoBehaviour
 {
     [Header("OpenAI")]
-    private string apiKey = File.ReadAllText("Assets/Config/openai.env").Trim();
+    private string apiKey = "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";
     public string apiUrl = "https://api.openai.com/v1/chat/completions";
     public string model = "gpt-4o-mini";
 
@@ -23,7 +23,270 @@ public class Gpt : MonoBehaviour
 
     [Header("Tools")]
     [TextArea(5, 12)]
-    private string toolsJson = File.ReadAllText("Assets/Config/tools.json").Trim();
+    private string toolsJson = @"
+[
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""recolor_object"",
+            ""description"": ""Change the color of an interactable object."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": {
+                        ""type"": ""string"",
+                        ""description"": ""Name of the interactable object.""
+                    },
+                    ""color"": {
+                        ""type"": ""string"",
+                        ""description"": ""Color name (red, blue, green) or hex value (#RRGGBB).""
+                    }
+                },
+                ""required"": [
+                    ""name"",
+                    ""color""
+                ]
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""remove_interactable"",
+            ""description"": ""Remove an interactable object from the scene and whitelist."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": {
+                        ""type"": ""string"",
+                        ""description"": ""Name of the interactable object to remove.""
+                    }
+                },
+                ""required"": [
+                    ""name""
+                ]
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""set_position"",
+            ""description"": ""Move an interactable object to a new world position."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": {
+                        ""type"": ""string"",
+                        ""description"": ""Name of the interactable object.""
+                    },
+                    ""position"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" }
+                        },
+                        ""required"": [ ""x"", ""y"", ""z"" ]
+                    }
+                },
+                ""required"": [ ""name"", ""position"" ]
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""set_velocity"",
+            ""description"": ""Set the velocity of an interactable object that has a Rigidbody."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""velocity"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" }
+                        },
+                        ""required"": [ ""x"", ""y"", ""z"" ]
+                    }
+                },
+                ""required"": [ ""name"", ""velocity"" ]
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""set_rotation"",
+            ""description"": ""Set the world rotation of an interactable object using a Quaternion."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""rotation"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" },
+                            ""w"": { ""type"": ""number"" }
+                        },
+                        ""required"": [ ""x"", ""y"", ""z"", ""w"" ]
+                    }
+                },
+                ""required"": [ ""name"", ""rotation"" ]
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""set_scale"",
+            ""description"": ""Set the local scale of an interactable object."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""scale"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" }
+                        },
+                        ""required"": [ ""x"", ""y"", ""z"" ]
+                    }
+                },
+                ""required"": [ ""name"", ""scale"" ]
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""create_cube"",
+            ""description"": ""Spawn a cube interactable from the prefab template (with Rigidbody)."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""position"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" }
+                        }
+                    },
+                    ""rotation"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" },
+                            ""w"": { ""type"": ""number"" }
+                        }
+                    },
+                    ""scale"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" }
+                        }
+                    },
+                    ""velocity"": {
+                        ""type"": ""object"",
+                        ""properties"": {
+                            ""x"": { ""type"": ""number"" },
+                            ""y"": { ""type"": ""number"" },
+                            ""z"": { ""type"": ""number"" }
+                        }
+                    },
+                    ""color"": { ""type"": ""string"" }
+                }
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""create_cylinder"",
+            ""description"": ""Spawn a cylinder interactable from the prefab template (with Rigidbody)."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""position"": { ""type"": ""object"" },
+                    ""rotation"": { ""type"": ""object"" },
+                    ""scale"": { ""type"": ""object"" },
+                    ""velocity"": { ""type"": ""object"" },
+                    ""color"": { ""type"": ""string"" }
+                }
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""create_ball"",
+            ""description"": ""Spawn a soccer-ball-style sphere interactable from the prefab template (with Rigidbody)."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""position"": { ""type"": ""object"" },
+                    ""rotation"": { ""type"": ""object"" },
+                    ""scale"": { ""type"": ""object"" },
+                    ""velocity"": { ""type"": ""object"" },
+                    ""color"": { ""type"": ""string"" }
+                }
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""create_disc"",
+            ""description"": ""Spawn a thin disc interactable (curling material) from the prefab template (with Rigidbody)."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""position"": { ""type"": ""object"" },
+                    ""rotation"": { ""type"": ""object"" },
+                    ""scale"": { ""type"": ""object"" },
+                    ""velocity"": { ""type"": ""object"" },
+                    ""color"": { ""type"": ""string"" }
+                }
+            }
+        }
+    },
+    {
+        ""type"": ""function"",
+        ""function"": {
+            ""name"": ""create_mammae"",
+            ""description"": ""Spawn a long, thin cylinder (mammae) from the prefab template (with Rigidbody)."",
+            ""parameters"": {
+                ""type"": ""object"",
+                ""properties"": {
+                    ""name"": { ""type"": ""string"" },
+                    ""position"": { ""type"": ""object"" },
+                    ""rotation"": { ""type"": ""object"" },
+                    ""scale"": { ""type"": ""object"" },
+                    ""velocity"": { ""type"": ""object"" },
+                    ""color"": { ""type"": ""string"" }
+                }
+            }
+        }
+    }
+]
+";
+
+
     public bool includeTools = true;
 
     [Header("Networking")]
@@ -151,7 +414,7 @@ public class Gpt : MonoBehaviour
         messages.Add(new Message
         {
             role = "user",
-            content = $"사용자의 말: \"{userText}\"\n\n오브젝트 상태: ```{interaction.Editor_ListInteractables_ForGPT()}```"
+            content = $"사용자의 말: \"{userText}\"\n\n존재하는 오브젝트: ```{interaction.Editor_ListInteractables_ForGPT()}```"
         });
 
         return messages;
@@ -166,6 +429,7 @@ public class Gpt : MonoBehaviour
         _isRequestRunning = true;
 
         var body = BuildRequestBody(messages);
+        Debug.LogWarning("[Gpt] Request Body: " + body);
         var bodyRaw = Encoding.UTF8.GetBytes(body);
 
         using (var req = new UnityWebRequest(apiUrl, "POST"))

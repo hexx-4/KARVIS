@@ -35,9 +35,10 @@ public class Recorder : MonoBehaviour
         // RT 버튼 Down
         if ((OVRInput.GetDown(OVRInput.Button.One) && !ttsAgent.isResponding) || (Keyboard.current.rKey.wasPressedThisFrame && !ttsAgent.isResponding))
         {
-            on.Play();  
+            interaction.toolResponsed = false;
+            on.Play();
             sttAgent.StartListening();
-            promptText = "Q. \" (listening) \" ";
+            promptText = "Q. \" (듣는 중) \" ";
             resultText.text = promptText + "\n" + responseText;
         }
 
@@ -46,7 +47,7 @@ public class Recorder : MonoBehaviour
         {
             off.Play();
             sttAgent.StopNow();
-            responseText = "A. \" (waiting) \" ";
+            responseText = "A. \" (기다리는 중) \" ";
             resultText.text = promptText + "\n" + responseText;
         }
     }
@@ -58,12 +59,12 @@ public class Recorder : MonoBehaviour
         promptText = "Q. \" " + text + " \" ";
         resultText.text = promptText + "\n" + responseText;
         ttsAgent.isResponding = true;
+        Debug.LogWarning("[KARVIS] User said: " + text);
         gpt.SendUserMessage(text, interaction.Editor_ListInteractables_ForGPT());
 
     }
     public void OnGptResponseReceived(string response)
     {
-        Debug.Log("[KARVIS][Recorder] GPT Response: " + response);
         responseText = "A. \" " + response + " \" ";
         resultText.text = promptText + "\n" + responseText;
         ttsAgent.RunTTS(response);

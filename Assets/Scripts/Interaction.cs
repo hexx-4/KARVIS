@@ -14,6 +14,7 @@ public class Interaction : MonoBehaviour
 {
     public Recorder recorder;
     public string responseText;
+    public bool toolResponsed = false;
 
     [Serializable]
     public class Interactable
@@ -895,9 +896,13 @@ public class Interaction : MonoBehaviour
 
     private void SendFeedback(string text)
     {
-        OnToolActionFeedback?.Invoke(text);
-        Debug.Log($"[KARVIS][Interaction] {text}");
-        recorder.OnGptResponseReceived("명령 수행이 완료되었습니다.");
+        if (!toolResponsed)
+        {
+            OnToolActionFeedback?.Invoke(text);
+            Debug.Log($"[KARVIS][Interaction] {text}");
+            recorder.OnGptResponseReceived("명령 수행이 완료되었습니다.");
+            toolResponsed = true;
+        }
     }
 
     // ===== Editor / Debug API =====

@@ -211,7 +211,7 @@
         "type": "function",
         "function": {
             "name": "create_cube",
-            "description": "Spawn a cube interactable from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "description": "Spawn a cube interactable from the prefab template (with Rigidbody).",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -294,7 +294,7 @@
         "type": "function",
         "function": {
             "name": "create_cylinder",
-            "description": "Spawn a cylinder interactable from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "description": "Spawn a cylinder interactable from the prefab template (with Rigidbody).",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -373,7 +373,7 @@
         "type": "function",
         "function": {
             "name": "create_ball",
-            "description": "Spawn a soccer-ball-style sphere interactable from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "description": "Spawn a soccer-ball-style sphere interactable from the prefab template (with Rigidbody).",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -452,7 +452,7 @@
         "type": "function",
         "function": {
             "name": "create_disc",
-            "description": "Spawn a thin disc interactable (curling material) from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "description": "Spawn a thin disc interactable (curling material) from the prefab template (with Rigidbody).",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -531,7 +531,7 @@
         "type": "function",
         "function": {
             "name": "create_mammae",
-            "description": "Spawn a long, thin cylinder (mammae) from the prefab template (with Rigidbody + MetaXR grabbable).",
+            "description": "Spawn a long, thin cylinder (mammae) from the prefab template (with Rigidbody).",
             "parameters": {
                 "type": "object",
                 "properties": {
